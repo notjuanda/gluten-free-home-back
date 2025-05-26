@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 import { PaymentStatus } from '../../common/enums/payment-status.enum';
 
@@ -28,4 +35,10 @@ export class Payment {
         default: PaymentStatus.PENDIENTE,
     })
     estado: PaymentStatus;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

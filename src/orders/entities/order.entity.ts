@@ -5,6 +5,7 @@ import {
     ManyToOne,
     OneToMany,
     CreateDateColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Address } from '../../addresses/entities/address.entity';
@@ -40,4 +41,10 @@ export class Order {
 
     @OneToMany(() => Payment, (p) => p.pedido)
     pagos: Payment[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

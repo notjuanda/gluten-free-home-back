@@ -20,6 +20,8 @@ import { LogsModule } from './logs/logs.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { UploadModule } from './upload/upload.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
     imports: [
@@ -42,6 +44,8 @@ import { ProductCategoriesModule } from './product-categories/product-categories
         ArticlesModule,
         CommentsModule,
         ProductCategoriesModule,
+        UploadModule,
+        MailModule,
     ],
     controllers: [AppController],
     providers: [AppService],

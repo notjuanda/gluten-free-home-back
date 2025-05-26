@@ -43,10 +43,10 @@ export class User {
     telefono?: string;
 
     @CreateDateColumn()
-    creadoEn: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    actualizadoEn: Date;
+    updatedAt: Date;
 
     /* ───── Relaciones ───── */
     @ManyToMany(() => Role, (role) => role.usuarios, { eager: true })

@@ -5,7 +5,7 @@ import { Permission } from './entities/permission.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Permission])],  
+    imports: [TypeOrmModule.forFeature([Permission])],
     controllers: [PermissionsController],
     providers: [PermissionsService],
     exports: [TypeOrmModule],

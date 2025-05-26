@@ -4,6 +4,7 @@ import {
     Column,
     ManyToOne,
     CreateDateColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { Article } from '../../articles/entities/article.entity';
 import { User } from '../../users/entities/user.entity';
@@ -27,11 +28,15 @@ export class Comment {
     contenido: string;
 
     @CreateDateColumn()
-    fechaCreacion: Date;
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @Column({
         type: 'enum',
         enum: CommentStatus,
+        enumName: 'comments_estado_enum',
         default: CommentStatus.PENDIENTE,
     })
     estado: CommentStatus;

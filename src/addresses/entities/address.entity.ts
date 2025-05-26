@@ -4,6 +4,7 @@ import {
     Column,
     ManyToOne,
     CreateDateColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -30,9 +31,12 @@ export class Address {
     @Column({ default: 'Bolivia' })
     pais: string;
 
-    @CreateDateColumn()
-    creadoEn: Date;
-
     @ManyToOne(() => User, (user) => user.direcciones, { onDelete: 'CASCADE' })
     usuario: User;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

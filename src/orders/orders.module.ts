@@ -8,7 +8,7 @@ import { OrderItem } from 'src/order-items/entities/order-item.entity';
 import { Payment } from 'src/payments/entities/payment.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Order, Address, OrderItem, Payment])],  
+    imports: [TypeOrmModule.forFeature([Order, Address, OrderItem, Payment])],
     controllers: [OrdersController],
     providers: [OrdersService],
     exports: [TypeOrmModule],

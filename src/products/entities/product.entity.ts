@@ -56,10 +56,10 @@ export class Product {
     urlCertificado?: string;
 
     @CreateDateColumn()
-    creadoEn: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    actualizadoEn: Date;
+    updatedAt: Date;
 
     @OneToMany(() => ProductImage, (img) => img.producto, { cascade: true })
     imagenes: ProductImage[];

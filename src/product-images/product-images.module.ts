@@ -5,7 +5,7 @@ import { ProductImage } from './entities/product-image.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ProductImage])],  
+    imports: [TypeOrmModule.forFeature([ProductImage])],
     controllers: [ProductImagesController],
     providers: [ProductImagesService],
     exports: [TypeOrmModule],

@@ -52,10 +52,10 @@ export class Article {
     fechaPublicacion?: Date;
 
     @CreateDateColumn()
-    creadoEn: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    actualizadoEn: Date;
+    updatedAt: Date;
 
     /* ───── Relaciones ───── */
     @ManyToMany(() => BlogCategory, (cat) => cat.articulos, { cascade: true })

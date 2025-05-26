@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToMany,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 
 @Entity({ name: 'ingredients' })
@@ -11,4 +18,10 @@ export class Ingredient {
 
     @ManyToMany(() => Product, (p) => p.ingredientes)
     products: Product[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
