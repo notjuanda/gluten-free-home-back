@@ -29,8 +29,8 @@ export class AuthController {
         res.cookie('authToken', token, {
             httpOnly: true,
             sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: process.env.NODE_ENV === 'produccion',
+            maxAge: 1 * 24 * 60 * 60 * 1000,
         });
 
         return { message: 'Inicio de sesión exitoso', user };
