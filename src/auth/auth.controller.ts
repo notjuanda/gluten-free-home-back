@@ -6,11 +6,14 @@ import {
     HttpCode,
     Get,
     Query,
+    UseGuards,
+    Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -45,5 +48,11 @@ export class AuthController {
     @Get('verify')
     async verifyEmail(@Query('token') token: string) {
         return this.authService.verifyEmail(token);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    getProfile(@Req() req: Request) {
+        return req.user;
     }
 }
