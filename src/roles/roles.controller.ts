@@ -41,10 +41,7 @@ export class RolesController {
 
     @Patch(':id')
     @Permissions('roles:editar')
-    update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateRoleDto,
-    ) {
+    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
         return this.rolesService.update(id, dto);
     }
 

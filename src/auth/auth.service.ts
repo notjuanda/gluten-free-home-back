@@ -30,7 +30,8 @@ export class AuthService {
             ],
         });
 
-        if (existing) throw new ConflictException('Usuario o correo ya registrado');
+        if (existing)
+            throw new ConflictException('Usuario o correo ya registrado');
 
         const hash = await bcrypt.hash(dto.contraseña, 10);
         const user = this.userRepo.create({
@@ -43,7 +44,9 @@ export class AuthService {
         const token = await this.generateEmailToken(savedUser);
 
         await this.mailService.sendVerificationEmail(savedUser.correo, token);
-        return { message: 'Usuario registrado. Verifica tu correo electrónico' };
+        return {
+            message: 'Usuario registrado. Verifica tu correo electrónico',
+        };
     }
 
     async login(dto: LoginDto) {
@@ -54,11 +57,16 @@ export class AuthService {
 
         if (!user) throw new UnauthorizedException('Credenciales inválidas');
 
-        const isValid = await bcrypt.compare(dto.contraseña, user.contraseñaHash);
+        const isValid = await bcrypt.compare(
+            dto.contraseña,
+            user.contraseñaHash,
+        );
         if (!isValid) throw new UnauthorizedException('Credenciales inválidas');
 
         if (user.estadoCorreo !== EmailStatus.VERIFICADO) {
-            throw new UnauthorizedException('Debes verificar tu correo electrónico');
+            throw new UnauthorizedException(
+                'Debes verificar tu correo electrónico',
+            );
         }
 
         const payload = {
@@ -100,7 +108,9 @@ export class AuthService {
     async verifyEmail(token: string) {
         try {
             const payload = this.jwtService.verify(token);
-            const user = await this.userRepo.findOne({ where: { id: payload.sub } });
+            const user = await this.userRepo.findOne({
+                where: { id: payload.sub },
+            });
 
             if (!user) throw new UnauthorizedException('Usuario no encontrado');
 

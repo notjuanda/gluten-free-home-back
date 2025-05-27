@@ -30,7 +30,8 @@ export class UsersService {
             ],
         });
 
-        if (exists) throw new ConflictException('Correo o usuario ya registrado');
+        if (exists)
+            throw new ConflictException('Correo o usuario ya registrado');
 
         const contraseñaHash = await bcrypt.hash(dto.contraseña, 10);
 
