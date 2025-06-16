@@ -40,7 +40,6 @@
     "express-session": "^1.18.1",
     "fs-extra": "^11.3.0",
     "multer": "^2.0.0",
-    "mysql2": "^3.14.1",
     "nodemailer": "^7.0.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

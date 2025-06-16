@@ -1,45 +1,52 @@
 import {
-    Injectable,
-    CanActivate,
-    ExecutionContext,
-    ForbiddenException,
+    Injectable, CanActivate, ExecutionContext, ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { DataSource, In } from 'typeorm';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { Role } from '../../roles/entities/role.entity';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) {}
+    constructor(
+        private readonly reflector: Reflector,
+        private readonly dataSource: DataSource,
+    ) {}
 
-    canActivate(context: ExecutionContext): boolean {
-        const permisosRequeridos = this.reflector.getAllAndOverride<string[]>(
-            PERMISSIONS_KEY,
-            [context.getHandler(), context.getClass()],
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const requeridos = this.reflector.getAllAndOverride<string[]>(
+        PERMISSIONS_KEY,
+        [context.getHandler(), context.getClass()],
         );
 
-        if (!permisosRequeridos || permisosRequeridos.length === 0) return true;
+        if (!requeridos?.length) return true;
 
-        const request = context.switchToHttp().getRequest();
-        const usuario = request.user;
+        const req = context.switchToHttp().getRequest();
+        const usuario = req.user;
 
         if (!usuario || !Array.isArray(usuario.roles)) {
-            throw new ForbiddenException('Acceso denegado: usuario sin roles');
+        throw new ForbiddenException('Acceso denegado: usuario sin roles');
         }
 
-        const permisosUsuario = usuario.roles.flatMap((rol) =>
-            Array.isArray(rol.permisos)
-                ? rol.permisos.map((p) => p.clavePermiso)
-                : [],
-        );
-
-        const tienePermiso = permisosRequeridos.every((permiso) =>
-            permisosUsuario.includes(permiso),
-        );
-
-        if (!tienePermiso) {
-            throw new ForbiddenException('No tienes permisos suficientes');
+        const roleIds: number[] = usuario.roles.map((r: any) => r.id);
+        if (!roleIds.length) {
+        throw new ForbiddenException('Acceso denegado: sin roles asignados');
         }
 
+        const roleRepo = this.dataSource.getRepository(Role);
+        const roles = await roleRepo.find({
+        where: { id: In(roleIds) },
+        relations: ['permisos'],
+        });
+
+        const permisosUsuario = roles.flatMap((rol) =>
+        rol.permisos.map((p) => p.clavePermiso),
+        );
+
+        const ok = requeridos.every((p) => permisosUsuario.includes(p));
+        if (!ok) throw new ForbiddenException('No tienes permisos suficientes');
+
+        req.user.permisos = permisosUsuario;
         return true;
     }
 }

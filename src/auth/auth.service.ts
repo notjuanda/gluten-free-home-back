@@ -77,11 +77,9 @@ export class AuthService {
             roles: user.roles.map((r) => ({
                 id: r.id,
                 nombre: r.nombre,
-                permisos: r.permisos.map((p) => ({
-                    clavePermiso: p.clavePermiso,
-                })),
             })),
         };
+        console.log('Payload:', payload);
 
         const token = this.jwtService.sign(payload);
 
