@@ -8,7 +8,8 @@ import { ProductCategory } from './../product-categories/entities/product-catego
 import { Brand } from '../brands/entities/brand.entity';
 import { Ingredient } from '../ingredients/entities/ingredient.entity';
 import { ProductImage } from '../product-images/entities/product-image.entity';
-import { OrderItem } from '../order-items/entities/order-item.entity';
+
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class ProductsService {
@@ -21,6 +22,7 @@ export class ProductsService {
         private readonly ingRepo: Repository<Ingredient>,
         @InjectRepository(ProductImage)
         private readonly imgRepo: Repository<ProductImage>,
+        private readonly uploadService: UploadService,
     ) {}
 
     findAll() {
@@ -128,14 +130,22 @@ export class ProductsService {
     }
 
     async subirImagen(
-        id: number,
-        body: { urlImagen: string; textoAlt?: string },
+    id: number,
+    file: Express.Multer.File,
+    dto: { textoAlt?: string },
     ) {
-        const prod = await this.repo.findOneBy({ id });
-        if (!prod) throw new NotFoundException('Producto no encontrado');
+    const prod = await this.repo.findOneBy({ id });
+    if (!prod) throw new NotFoundException('Producto no encontrado');
 
-        const img = this.imgRepo.create({ ...body, producto: prod });
-        return this.imgRepo.save(img);
+    const filename  = await this.uploadService.saveFile(file);
+    const urlImagen = `/files/${filename}`;
+
+    const img = this.imgRepo.create({
+        urlImagen,
+        textoAlt: dto.textoAlt,
+        producto: prod,
+    });
+    return this.imgRepo.save(img);
     }
 
     async eliminarImagen(id: number, imagenId: number) {

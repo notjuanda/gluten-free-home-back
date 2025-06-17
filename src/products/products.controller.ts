@@ -9,17 +9,23 @@ import {
     ParseIntPipe,
     UseGuards,
     Query,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AsignarCategoriaDto } from './dto/asignar-categoria.dto';
 import { AsignarMarcaDto } from './dto/asignar-marca.dto';
 import { AsignarIngredientesDto } from './dto/asignar-ingredientes.dto';
+import { SubirImagenDto } from './dto/subir-imagen.dto';
+
 import { Permissions } from '../common/decorators/permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
-import { SubirImagenDto } from './dto/subir-imagen.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -82,11 +88,13 @@ export class ProductsController {
     @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post(':id/imagenes')
     @Permissions('productos:subir_imagenes')
+    @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
     subirImagen(
         @Param('id', ParseIntPipe) id: number,
-        @Body() body: SubirImagenDto,
+        @UploadedFile() file: Express.Multer.File,
+        @Body() dto: SubirImagenDto,
     ) {
-        return this.productsService.subirImagen(id, body);
+        return this.productsService.subirImagen(id, file, dto);
     }
 
     @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -99,10 +107,16 @@ export class ProductsController {
         return this.productsService.eliminarImagen(id, imagenId);
     }
 
-    // Métodos sin permisos especiales, solo requieren autenticación
     @Get()
     findAll() {
         return this.productsService.findAll();
+    }
+
+    @Get('top')
+    getTopVendidos(@Query('limit') limit?: number) {
+        return this.productsService.findTopVendidos(
+            limit ? Number(limit) : 10,
+        );
     }
 
     @Get(':id')
@@ -118,10 +132,5 @@ export class ProductsController {
     @Get(':id/imagenes')
     getImagenes(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.getImagenes(id);
-    }
-
-    @Get('top')
-    getTopVendidos(@Query('limit') limit?: number) {
-        return this.productsService.findTopVendidos(limit ? Number(limit) : 10);
     }
 }

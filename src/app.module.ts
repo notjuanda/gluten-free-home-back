@@ -23,8 +23,17 @@ import { ProductCategoriesModule } from './product-categories/product-categories
 import { UploadModule } from './upload/upload.module';
 import { MailModule } from './mail/mail.module';
 
+import { ServeStaticModule } from '@nestjs/serve-static';
+import * as path from 'path';
+
 @Module({
     imports: [
+
+        ServeStaticModule.forRoot({
+        rootPath : path.join(process.cwd(), 'uploads'), 
+        serveRoot: '/files',
+        }),
+
         ConfigModule,
         DatabaseModule,
         UsersModule,
