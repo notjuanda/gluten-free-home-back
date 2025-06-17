@@ -20,29 +20,18 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { SubirImagenDto } from './dto/subir-imagen.dto';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
-    @Get()
-    @Permissions('productos:ver')
-    findAll() {
-        return this.productsService.findAll();
-    }
-
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('productos:crear')
     create(@Body() dto: CreateProductDto) {
         return this.productsService.create(dto);
     }
 
-    @Get(':id')
-    @Permissions('productos:ver')
-    findOne(@Param('id', ParseIntPipe) id: number) {
-        return this.productsService.findOne(id);
-    }
-
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('productos:editar')
     update(
@@ -52,12 +41,14 @@ export class ProductsController {
         return this.productsService.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('productos:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.remove(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/categoria')
     @Permissions('productos:asignar_categoria')
     asignarCategoria(
@@ -67,6 +58,7 @@ export class ProductsController {
         return this.productsService.asignarCategoria(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/marca')
     @Permissions('productos:asignar_marca')
     asignarMarca(
@@ -76,6 +68,7 @@ export class ProductsController {
         return this.productsService.asignarMarca(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/ingredientes')
     @Permissions('productos:asignar_ingredientes')
     asignarIngredientes(
@@ -85,18 +78,7 @@ export class ProductsController {
         return this.productsService.asignarIngredientes(id, dto);
     }
 
-    @Get(':id/ingredientes')
-    @Permissions('productos:ver_ingredientes')
-    getIngredientes(@Param('id', ParseIntPipe) id: number) {
-        return this.productsService.getIngredientes(id);
-    }
-
-    @Get(':id/imagenes')
-    @Permissions('productos:ver_imagenes')
-    getImagenes(@Param('id', ParseIntPipe) id: number) {
-        return this.productsService.getImagenes(id);
-    }
-
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post(':id/imagenes')
     @Permissions('productos:subir_imagenes')
     subirImagen(
@@ -106,6 +88,7 @@ export class ProductsController {
         return this.productsService.subirImagen(id, body);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id/imagenes/:imagenId')
     @Permissions('productos:eliminar_imagenes')
     eliminarImagen(
@@ -113,5 +96,26 @@ export class ProductsController {
         @Param('imagenId', ParseIntPipe) imagenId: number,
     ) {
         return this.productsService.eliminarImagen(id, imagenId);
+    }
+
+    // Métodos sin permisos especiales, solo requieren autenticación
+    @Get()
+    findAll() {
+        return this.productsService.findAll();
+    }
+
+    @Get(':id')
+    findOne(@Param('id', ParseIntPipe) id: number) {
+        return this.productsService.findOne(id);
+    }
+
+    @Get(':id/ingredientes')
+    getIngredientes(@Param('id', ParseIntPipe) id: number) {
+        return this.productsService.getIngredientes(id);
+    }
+
+    @Get(':id/imagenes')
+    getImagenes(@Param('id', ParseIntPipe) id: number) {
+        return this.productsService.getImagenes(id);
     }
 }
