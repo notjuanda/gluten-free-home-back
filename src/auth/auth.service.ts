@@ -23,41 +23,35 @@ export class AuthService {
     ) {}
 
     async register(dto: RegisterDto) {
-        const existing = await this.userRepo.findOne({
-            where: [
-                { correo: dto.correo },
-                { nombreUsuario: dto.nombreUsuario },
-            ],
-        });
+    // 1. Verifica duplicados (igual que antes)
+    const existing = await this.userRepo.findOne({
+        where: [{ correo: dto.correo }, { nombreUsuario: dto.nombreUsuario }],
+    });
+    if (existing) throw new ConflictException('Usuario o correo ya registrado');
 
-        if (existing)
-            throw new ConflictException('Usuario o correo ya registrado');
+    // 2. Prepara la entidad y la guarda para obtener el id
+    const hash = await bcrypt.hash(dto.contraseña, 10);
 
-        const hash = await bcrypt.hash(dto.contraseña, 10);
+    let user = this.userRepo.create({
+        ...dto,
+        contraseñaHash: hash,
+        estadoCorreo: EmailStatus.EN_PROCESO,
+    });
 
-        // Creamos la entidad pero no la guardamos aún
-        const user = this.userRepo.create({
-            ...dto,
-            contraseñaHash: hash,
-            estadoCorreo: EmailStatus.EN_PROCESO,
-        });
+    user = await this.userRepo.save(user);          // <— ¡YA TIENE ID!
 
-        // Generamos el token antes de guardar el usuario
-        const token = await this.generateEmailToken(user);
+    // 3. Genera token con el id correcto
+    const token = await this.generateEmailToken(user);
 
-        // Intentamos enviar el correo antes de guardar en la BD
-        try {
-            await this.mailService.sendVerificationEmail(user.correo, token);
-        } catch (error) {
-            throw new ConflictException('No se pudo enviar el correo de verificación');
-        }
+    // 4. Intenta enviar el mail; si falla, elimina al usuario
+    try {
+        await this.mailService.sendVerificationEmail(user.correo, token);
+    } catch (e) {
+        await this.userRepo.remove(user);
+        throw new ConflictException('No se pudo enviar el correo de verificación');
+    }
 
-        // Solo si el correo se envió correctamente, guardamos el usuario
-        await this.userRepo.save(user);
-
-        return {
-            message: 'Usuario registrado. Verifica tu correo electrónico',
-        };
+    return { message: 'Usuario registrado. Verifica tu correo electrónico' };
     }
 
     async login(dto: LoginDto) {
@@ -115,22 +109,33 @@ export class AuthService {
 
     async verifyEmail(token: string) {
         try {
+            console.log('[verifyEmail] Token recibido:', token);
+
             const payload = this.jwtService.verify(token);
+            console.log('[verifyEmail] Payload decodificado:', payload);
+
             const user = await this.userRepo.findOne({
                 where: { id: payload.sub },
             });
+            console.log('[verifyEmail] Usuario encontrado:', user);
 
-            if (!user) throw new UnauthorizedException('Usuario no encontrado');
+            if (!user) {
+                console.error('[verifyEmail] Usuario no encontrado para el id:', payload.sub);
+                throw new UnauthorizedException('Usuario no encontrado');
+            }
 
             if (user.estadoCorreo === EmailStatus.VERIFICADO) {
+                console.log('[verifyEmail] El usuario ya estaba verificado:', user.id);
                 return { message: 'La cuenta ya fue verificada anteriormente' };
             }
 
             user.estadoCorreo = EmailStatus.VERIFICADO;
             await this.userRepo.save(user);
+            console.log('[verifyEmail] Usuario verificado y guardado:', user.id);
 
             return { message: 'Correo verificado exitosamente' };
         } catch (err) {
+            console.error('[verifyEmail] Error verificando el correo:', err);
             throw new UnauthorizedException('Token inválido o expirado');
         }
     }
