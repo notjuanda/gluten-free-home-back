@@ -34,17 +34,27 @@ export class AuthService {
             throw new ConflictException('Usuario o correo ya registrado');
 
         const hash = await bcrypt.hash(dto.contraseña, 10);
-        
+
+        // Creamos la entidad pero no la guardamos aún
         const user = this.userRepo.create({
             ...dto,
             contraseñaHash: hash,
             estadoCorreo: EmailStatus.EN_PROCESO,
         });
 
-        const savedUser = await this.userRepo.save(user);
-        const token = await this.generateEmailToken(savedUser);
+        // Generamos el token antes de guardar el usuario
+        const token = await this.generateEmailToken(user);
 
-        await this.mailService.sendVerificationEmail(savedUser.correo, token);
+        // Intentamos enviar el correo antes de guardar en la BD
+        try {
+            await this.mailService.sendVerificationEmail(user.correo, token);
+        } catch (error) {
+            throw new ConflictException('No se pudo enviar el correo de verificación');
+        }
+
+        // Solo si el correo se envió correctamente, guardamos el usuario
+        await this.userRepo.save(user);
+
         return {
             message: 'Usuario registrado. Verifica tu correo electrónico',
         };
