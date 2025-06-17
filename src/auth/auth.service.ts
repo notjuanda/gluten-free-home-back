@@ -34,6 +34,7 @@ export class AuthService {
             throw new ConflictException('Usuario o correo ya registrado');
 
         const hash = await bcrypt.hash(dto.contraseña, 10);
+        
         const user = this.userRepo.create({
             ...dto,
             contraseñaHash: hash,
@@ -79,7 +80,6 @@ export class AuthService {
                 nombre: r.nombre,
             })),
         };
-        console.log('Payload:', payload);
 
         const token = this.jwtService.sign(payload);
 
