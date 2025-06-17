@@ -8,6 +8,7 @@ import {
     Body,
     ParseIntPipe,
     UseGuards,
+    Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -117,5 +118,10 @@ export class ProductsController {
     @Get(':id/imagenes')
     getImagenes(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.getImagenes(id);
+    }
+
+    @Get('top')
+    getTopVendidos(@Query('limit') limit?: number) {
+        return this.productsService.findTopVendidos(limit ? Number(limit) : 10);
     }
 }

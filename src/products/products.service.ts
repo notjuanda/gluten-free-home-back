@@ -8,6 +8,7 @@ import { ProductCategory } from './../product-categories/entities/product-catego
 import { Brand } from '../brands/entities/brand.entity';
 import { Ingredient } from '../ingredients/entities/ingredient.entity';
 import { ProductImage } from '../product-images/entities/product-image.entity';
+import { OrderItem } from '../order-items/entities/order-item.entity';
 
 @Injectable()
 export class ProductsService {
@@ -143,5 +144,35 @@ export class ProductsService {
         });
         if (!img) throw new NotFoundException('Imagen no encontrada');
         return this.imgRepo.remove(img);
+    }
+
+    async findTopVendidos(limit = 10) {
+        //  SUM(oi.cantidad) = total de unidades vendidas por producto
+        const qb = this.repo
+            .createQueryBuilder('p')
+            .leftJoin('order_items', 'oi', 'oi.productoId = p.id')
+            .leftJoinAndSelect('p.imagenes', 'imagenes')
+            .leftJoinAndSelect('p.categoria', 'categoria')
+            .leftJoinAndSelect('p.marca', 'marca')
+            .select(['p', 'categoria', 'marca', 'imagenes'])
+            .addSelect('COALESCE(SUM(oi.cantidad), 0)', 'ventas')
+            .groupBy('p.id')
+            .addGroupBy('categoria.id')
+            .addGroupBy('marca.id')
+            .addGroupBy('imagenes.id')
+            .orderBy('ventas', 'DESC')
+            .limit(limit);
+
+        //  getRawMany() trae la columna calculada, getMany() trae las entidades;
+        //  mezclamos ambas para incluir «ventas» en la respuesta.
+        const [products, raw] = await Promise.all([
+            qb.getMany(),
+            qb.getRawMany<{ ventas: string }>(),
+        ]);
+
+        return products.map((prod, idx) => ({
+            ...prod,
+            ventas: Number(raw[idx].ventas),
+        }));
     }
 }
