@@ -184,7 +184,7 @@ export class OrdersService {
     }
 
     async generateInvoicePdf(order: Order, payment: Payment): Promise<Buffer> {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument({ margin: 40 });
         const bufferStream = new streamBuffers.WritableStreamBuffer();
         doc.pipe(bufferStream);
 
@@ -194,54 +194,108 @@ export class OrdersService {
             .fill('#2A3F32')
             .fillColor('#fff')
             .fontSize(24)
+            .font('Helvetica-Bold')
             .text('GlutenFreeHome', 40, 20, { align: 'left' })
-            .fontSize(14)
-            .text('Factura de Compra', { align: 'right', continued: false });
+            .fontSize(16)
+            .text('Factura de Compra', 0, 32, { align: 'right' });
         doc.moveDown(2);
-        doc.fillColor('#000');
+        doc.fillColor('#000').font('Helvetica');
 
-        // Datos generales
-        doc.fontSize(12).text(`Pedido: #${order.id}`);
-        doc.text(`Fecha: ${new Date(payment.fechaPago).toLocaleString()}`);
-        doc.text(`Cliente: ${order.usuario.nombreCompleto || order.usuario.nombreUsuario}`);
-        doc.text(`Correo: ${order.usuario.correo}`);
-        doc.text(`Dirección de envío: ${order.direccionEnvio ? `${order.direccionEnvio.linea1}${order.direccionEnvio.linea2 ? ', ' + order.direccionEnvio.linea2 : ''}, ${order.direccionEnvio.ciudad}, ${order.direccionEnvio.departamento}${order.direccionEnvio.codigoPostal ? ', ' + order.direccionEnvio.codigoPostal : ''}, ${order.direccionEnvio.pais}` : ''}`);
-        doc.moveDown();
+        // Cabecera de datos del pedido en recuadro, campos alineados verticalmente y con más espacio
+        const headerX = 40;
+        let headerY = doc.y;
+        const headerWidth = doc.page.width - 80;
+        const padding = 18;
+        let cursorY = headerY + padding;
+        const lineSpacing = 22;
+        // Calcular altura dinámica
+        let headerHeight = 0;
+        // Medir dirección
+        let direccionLines: string[] = [];
+        if (order.direccionEnvio) {
+            direccionLines.push(order.direccionEnvio.linea1);
+            if (order.direccionEnvio.linea2) direccionLines.push(order.direccionEnvio.linea2);
+            direccionLines.push(`${order.direccionEnvio.ciudad}, ${order.direccionEnvio.departamento}`);
+            if (order.direccionEnvio.codigoPostal) direccionLines.push(`CP: ${order.direccionEnvio.codigoPostal}`);
+            if (order.direccionEnvio.pais) direccionLines.push(order.direccionEnvio.pais);
+        }
+        headerHeight = 4 * lineSpacing + direccionLines.length * 16 + padding * 2 + 10;
+        doc.roundedRect(headerX, headerY, headerWidth, headerHeight, 10).stroke('#2A3F32');
+        // Campos con títulos alineados a la izquierda y valores a la derecha
+        const labelX = headerX + 20;
+        const valueX = headerX + 160;
+        doc.fontSize(13).font('Helvetica-Bold').text(`Pedido: #${order.id}`, labelX, cursorY);
+        doc.font('Helvetica').fontSize(13).text(`Fecha: ${new Date(payment.fechaPago).toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'short' })}`, valueX, cursorY);
+        cursorY += lineSpacing;
+        doc.font('Helvetica-Bold').text('Cliente:', labelX, cursorY);
+        doc.font('Helvetica').text(`${order.usuario.nombreCompleto || order.usuario.nombreUsuario}`, valueX, cursorY);
+        cursorY += lineSpacing;
+        doc.font('Helvetica-Bold').text('Correo:', labelX, cursorY);
+        doc.font('Helvetica').text(`${order.usuario.correo}`, valueX, cursorY);
+        cursorY += lineSpacing;
+        doc.font('Helvetica-Bold').text('Dirección de envío:', labelX, cursorY);
+        cursorY += lineSpacing - 6;
+        doc.font('Helvetica').fontSize(12);
+        direccionLines.forEach(line => {
+            doc.text(line, labelX + 20, cursorY);
+            cursorY += 16;
+        });
+        doc.y = headerY + headerHeight + 10;
 
         // Línea divisoria
         doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke('#2A3F32');
         doc.moveDown();
 
         // Tabla de productos
-        doc.fontSize(13).text('Detalle de productos:', { underline: true });
+        doc.fontSize(13).font('Helvetica-Bold').text('Detalle de productos:', { underline: true });
         doc.moveDown(0.5);
-        doc.fontSize(11);
-        doc.text('Producto', 50, doc.y, { continued: true });
-        doc.text('Cantidad', 250, doc.y, { continued: true });
-        doc.text('Precio unitario', 330, doc.y, { continued: true });
-        doc.text('Subtotal', 440, doc.y);
+        doc.fontSize(11).font('Helvetica-Bold');
+        const tableTop = doc.y;
+        const col1 = 50, col2 = 250, col3 = 350, col4 = 470;
+        const rowHeight = 18;
+        // Encabezados
+        doc.text('Producto', col1, tableTop, { continued: true });
+        doc.text('Cantidad', col2, tableTop, { continued: true });
+        doc.text('Precio unitario', col3, tableTop, { continued: true });
+        doc.text('Subtotal', col4, tableTop);
         doc.moveDown(0.2);
         doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke('#ccc');
-        order.items.forEach((item) => {
-            doc.text(item.producto.nombre, 50, doc.y, { continued: true });
-            doc.text(`${item.cantidad}`, 250, doc.y, { continued: true });
-            doc.text(`Bs ${Number(item.precioUnitBob).toFixed(2)}`, 330, doc.y, { continued: true });
-            doc.text(`Bs ${(Number(item.precioUnitBob) * item.cantidad).toFixed(2)}`, 440, doc.y);
+        let subtotalBob = 0;
+        doc.font('Helvetica');
+        let y = doc.y;
+        order.items.forEach((item, idx) => {
+            if (idx % 2 === 1) {
+                // Fila alterna gris claro
+                doc.rect(40, y - 1, doc.page.width - 80, rowHeight).fill('#f6f6f6').fillColor('#000');
+            }
+            doc.text(item.producto.nombre, col1, y, { continued: true });
+            doc.text(`${item.cantidad}`, col2, y, { continued: true });
+            doc.text(`Bs ${Number(item.precioUnitBob).toFixed(2)}`, col3, y, { continued: true });
+            const subtotal = Number(item.precioUnitBob) * item.cantidad;
+            doc.text(`Bs ${subtotal.toFixed(2)}`, col4, y);
+            subtotalBob += subtotal;
+            if (idx % 2 === 1) doc.fillColor('#000');
+            y += rowHeight;
         });
-        doc.moveDown();
+        doc.y = y;
+        doc.moveDown(0.2);
         doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke('#2A3F32');
-        doc.moveDown();
+        doc.moveDown(0.5);
 
-        // Totales
-        doc.fontSize(12).text(`Costo de envío: Bs ${Number(order.costoEnvioBob || 0).toFixed(2)}`, { align: 'right' });
-        doc.fontSize(13).text(`Total: Bs ${Number(order.totalBob || 0).toFixed(2)}`, { align: 'right', bold: true });
-        doc.moveDown();
-        doc.fontSize(11).text(`Método de pago: Stripe`, { align: 'right' });
-        doc.fontSize(10).text(`ID de pago: ${payment.stripePaymentIntentId}`, { align: 'right' });
-        doc.moveDown(2);
+        // Subtotal y totales (alineados a la derecha, uno debajo del otro)
+        const rightCol = col4;
+        doc.fontSize(12).font('Helvetica-Bold').text(`Subtotal: Bs ${subtotalBob.toFixed(2)}`, rightCol, doc.y, { align: 'right' });
+        doc.font('Helvetica').fontSize(12).text(`Costo de envío: Bs ${Number(order.costoEnvioBob || 0).toFixed(2)}`, rightCol, doc.y + 16, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(15).fillColor('#2A3F32').text(`Total: Bs ${Number(order.totalBob || 0).toFixed(2)}`, rightCol, doc.y + 32, { align: 'right' });
+        doc.fillColor('#000');
 
-        // Footer
-        doc.fontSize(9).fillColor('#888').text('Gracias por tu compra en GlutenFreeHome. Si tienes dudas, contáctanos.', 40, doc.page.height - 60, { align: 'center' });
+        // Pagado con Stripe justo debajo del total
+        doc.font('Helvetica').fontSize(10).fillColor('#888').text('Pagado con Stripe', rightCol, doc.y + 50, { align: 'right' });
+        doc.fillColor('#000');
+
+        // Mensaje de agradecimiento, centrado, justo después
+        doc.moveDown(1);
+        doc.fontSize(10).fillColor('#888').text('Gracias por tu compra en GlutenFreeHome. Si tienes dudas, contáctanos respondiendo este correo.', { align: 'center' });
         doc.end();
 
         await new Promise((resolve) => bufferStream.on('finish', resolve));
