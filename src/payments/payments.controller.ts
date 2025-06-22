@@ -8,10 +8,12 @@ import {
     Body,
     ParseIntPipe,
     UseGuards,
+    Req,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
@@ -37,6 +39,11 @@ export class PaymentsController {
     @Permissions('pagos:crear')
     create(@Body() dto: CreatePaymentDto) {
         return this.paymentsService.create(dto);
+    }
+
+    @Post('stripe/create-checkout-session')
+    createStripeCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
+        return this.paymentsService.createStripeCheckoutSession(dto);
     }
 
     @Patch(':id')

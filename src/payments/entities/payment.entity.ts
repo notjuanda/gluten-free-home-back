@@ -36,6 +36,19 @@ export class Payment {
     })
     estado: PaymentStatus;
 
+    // Campos para Stripe
+    @Column({ nullable: true })
+    stripePaymentIntentId?: string;
+
+    @Column({ nullable: true })
+    stripeCustomerId?: string;
+
+    @Column({ nullable: true })
+    stripePaymentMethodId?: string;
+
+    @Column({ type: 'json', nullable: true })
+    stripeMetadata?: any;
+
     @CreateDateColumn()
     createdAt: Date;
 

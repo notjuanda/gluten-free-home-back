@@ -22,6 +22,7 @@ import { DatabaseModule } from './database/database.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { UploadModule } from './upload/upload.module';
 import { MailModule } from './mail/mail.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
@@ -54,6 +55,7 @@ import * as path from 'path';
         ProductCategoriesModule,
         UploadModule,
         MailModule,
+        AddressesModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -8,6 +8,7 @@ import {
     Body,
     ParseIntPipe,
     UseGuards,
+    Req,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -22,10 +23,11 @@ import { Permissions } from '../common/decorators/permissions.decorator';
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) {}
 
-    @Get()
-    @Permissions('pedidos:ver')
-    findAll() {
-        return this.ordersService.findAll();
+    @UseGuards(JwtAuthGuard)
+    @Get('me/orders')
+    async findMyOrders(@Req() req) {
+        const userId = req.user.sub;
+        return this.ordersService.findByUserId(userId);
     }
 
     @Get(':id')
@@ -71,5 +73,11 @@ export class OrdersController {
     @Permissions('pedidos:ver_direccion_envio')
     getDireccion(@Param('id', ParseIntPipe) id: number) {
         return this.ordersService.getDireccion(id);
+    }
+
+    @Get()
+    @Permissions('pedidos:ver')
+    findAll() {
+        return this.ordersService.findAll();
     }
 }

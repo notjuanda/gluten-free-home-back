@@ -8,6 +8,7 @@ import {
     Body,
     ParseIntPipe,
     UseGuards,
+    Req,
 } from '@nestjs/common';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -15,11 +16,18 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
+import { Request } from 'express';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('addresses')
 export class AddressesController {
     constructor(private readonly addressesService: AddressesService) {}
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    findMyAddresses(@Req() req: Request) {
+        const userId = req.user['sub'];
+        return this.addressesService.findByUserId(userId);
+    }
 
     @Get()
     @Permissions('direcciones:ver')

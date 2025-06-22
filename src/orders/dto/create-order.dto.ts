@@ -1,15 +1,29 @@
-import { IsNumber, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+    IsNumber,
+    IsOptional,
+    IsArray,
+    ValidateNested,
+    IsPositive,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
-class OrderItemDto {
+class OrderItemInput {
     @IsNumber()
+    @IsPositive()
     productoId: number;
 
     @IsNumber()
+    @IsPositive()
     cantidad: number;
 }
 
 export class CreateOrderDto {
+    @IsNumber()
+    usuarioId: number;
+
+    @IsNumber()
+    direccionEnvioId: number;
+
     @IsNumber()
     totalBob: number;
 
@@ -17,8 +31,15 @@ export class CreateOrderDto {
     @IsNumber()
     totalUsd?: number;
 
+    @IsNumber()
+    costoEnvioBob: number;
+
+    @IsOptional()
+    @IsNumber()
+    costoEnvioUsd?: number;
+
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => OrderItemDto)
-    items: OrderItemDto[];
+    @Type(() => OrderItemInput)
+    items: OrderItemInput[];
 }

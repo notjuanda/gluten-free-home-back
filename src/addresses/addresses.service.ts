@@ -52,6 +52,10 @@ export class AddressesService {
         return this.addressRepo.remove(dir);
     }
 
+    async findByUserId(userId: number) {
+        return this.addressRepo.find({ where: { usuario: { id: userId } } });
+    }
+
     async findByUsuario(usuarioId: number) {
         return this.addressRepo.find({ where: { usuario: { id: usuarioId } } });
     }

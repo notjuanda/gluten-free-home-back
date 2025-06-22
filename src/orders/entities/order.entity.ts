@@ -18,7 +18,7 @@ export class Order {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (u) => u.pedidos)
+    @ManyToOne(() => User, (u) => u.pedidos, { nullable: false })
     usuario: User;
 
     @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDIENTE })
@@ -30,11 +30,24 @@ export class Order {
     @Column('decimal', { precision: 12, scale: 2, nullable: true })
     totalUsd?: number;
 
-    @ManyToOne(() => Address, { onDelete: 'SET NULL' })
-    direccionEnvio: Address;
+    @Column('decimal', {
+        precision: 12,
+        scale: 2,
+        default: 0,
+        comment: 'Costo de envío en Bolivianos',
+    })
+    costoEnvioBob: number;
 
-    @CreateDateColumn()
-    fechaPedido: Date;
+    @Column('decimal', {
+        precision: 12,
+        scale: 2,
+        nullable: true,
+        comment: 'Costo de envío en Dólares',
+    })
+    costoEnvioUsd?: number;
+
+    @ManyToOne(() => Address, { nullable: false, onDelete: 'SET NULL' })
+    direccionEnvio: Address;
 
     @OneToMany(() => OrderItem, (item) => item.pedido, { cascade: true })
     items: OrderItem[];

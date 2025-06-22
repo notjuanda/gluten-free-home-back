@@ -58,4 +58,30 @@ export class MailService {
             `,
         });
     }
+
+    async sendOrderInvoice(to: string, order: any, payment: any, pdfBuffer: Buffer) {
+        const from = this.configService.get('mail.from');
+        await this.transporter.sendMail({
+            from,
+            to,
+            subject: `Factura de tu pedido #${order.id} - GlutenFreeHome` ,
+            html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <h2>¡Gracias por tu compra!</h2>
+                    <p>Tu pedido <b>#${order.id}</b> ha sido recibido y procesado correctamente.</p>
+                    <p>Adjuntamos la factura de tu compra en formato PDF.</p>
+                    <p>Si tienes dudas, contáctanos respondiendo a este correo.</p>
+                    <br>
+                    <p style="font-size: 0.9em; color: #888;">GlutenFreeHome - ${new Date().getFullYear()}</p>
+                </div>
+            `,
+            attachments: [
+                {
+                    filename: `Factura-Pedido-${order.id}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf',
+                },
+            ],
+        });
+    }
 }
