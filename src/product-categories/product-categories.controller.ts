@@ -16,29 +16,28 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('product-categories')
 export class ProductCategoriesController {
     constructor(private readonly service: ProductCategoriesService) {}
 
     @Get()
-    @Permissions('categorias:ver')
     findAll() {
         return this.service.findAll();
     }
 
     @Get(':id')
-    @Permissions('categorias:ver')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.service.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('categorias:crear')
     create(@Body() dto: CreateProductCategoryDto) {
         return this.service.create(dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('categorias:editar')
     update(
@@ -48,6 +47,7 @@ export class ProductCategoriesController {
         return this.service.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('categorias:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {

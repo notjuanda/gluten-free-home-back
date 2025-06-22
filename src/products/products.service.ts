@@ -130,22 +130,22 @@ export class ProductsService {
     }
 
     async subirImagen(
-    id: number,
-    file: Express.Multer.File,
-    dto: { textoAlt?: string },
+        id: number,
+        file: Express.Multer.File,
+        dto: { textoAlt?: string },
     ) {
-    const prod = await this.repo.findOneBy({ id });
-    if (!prod) throw new NotFoundException('Producto no encontrado');
+        const prod = await this.repo.findOneBy({ id });
+        if (!prod) throw new NotFoundException('Producto no encontrado');
 
-    const filename  = await this.uploadService.saveFile(file);
-    const urlImagen = `/files/${filename}`;
+        const filename = await this.uploadService.saveFile(file);
+        const urlImagen = `/files/${filename}`;
 
-    const img = this.imgRepo.create({
-        urlImagen,
-        textoAlt: dto.textoAlt,
-        producto: prod,
-    });
-    return this.imgRepo.save(img);
+        const img = this.imgRepo.create({
+            urlImagen,
+            textoAlt: dto.textoAlt,
+            producto: prod,
+        });
+        return this.imgRepo.save(img);
     }
 
     async eliminarImagen(id: number, imagenId: number) {

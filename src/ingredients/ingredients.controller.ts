@@ -16,29 +16,28 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('ingredients')
 export class IngredientsController {
     constructor(private readonly service: IngredientsService) {}
 
     @Get()
-    @Permissions('ingredientes:ver')
     findAll() {
         return this.service.findAll();
     }
 
     @Get(':id')
-    @Permissions('ingredientes:ver')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.service.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('ingredientes:crear')
     create(@Body() dto: CreateIngredientDto) {
         return this.service.create(dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('ingredientes:editar')
     update(
@@ -48,6 +47,7 @@ export class IngredientsController {
         return this.service.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('ingredientes:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {
@@ -55,7 +55,6 @@ export class IngredientsController {
     }
 
     @Get(':id/productos')
-    @Permissions('ingredientes:ver_productos_usan')
     getProductosUsan(@Param('id', ParseIntPipe) id: number) {
         return this.service.getProductosUsan(id);
     }

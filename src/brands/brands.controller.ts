@@ -16,35 +16,35 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('brands')
 export class BrandsController {
     constructor(private readonly service: BrandsService) {}
 
     @Get()
-    @Permissions('marcas:ver')
     findAll() {
         return this.service.findAll();
     }
 
     @Get(':id')
-    @Permissions('marcas:ver')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.service.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('marcas:crear')
     create(@Body() dto: CreateBrandDto) {
         return this.service.create(dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('marcas:editar')
     update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBrandDto) {
         return this.service.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('marcas:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {

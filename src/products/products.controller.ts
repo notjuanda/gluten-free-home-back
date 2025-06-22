@@ -114,9 +114,7 @@ export class ProductsController {
 
     @Get('top')
     getTopVendidos(@Query('limit') limit?: number) {
-        return this.productsService.findTopVendidos(
-            limit ? Number(limit) : 10,
-        );
+        return this.productsService.findTopVendidos(limit ? Number(limit) : 10);
     }
 
     @Get(':id')

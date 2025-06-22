@@ -28,10 +28,9 @@ import * as path from 'path';
 
 @Module({
     imports: [
-
         ServeStaticModule.forRoot({
-        rootPath : path.join(process.cwd(), 'uploads'), 
-        serveRoot: '/files',
+            rootPath: path.join(process.cwd(), 'uploads'),
+            serveRoot: '/files',
         }),
 
         ConfigModule,
