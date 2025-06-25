@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Address } from './entities/address.entity';
@@ -8,6 +8,8 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AddressesService {
+    private readonly logger = new Logger(AddressesService.name);
+
     constructor(
         @InjectRepository(Address)
         private readonly addressRepo: Repository<Address>,
@@ -53,10 +55,72 @@ export class AddressesService {
     }
 
     async findByUserId(userId: number) {
-        return this.addressRepo.find({ where: { usuario: { id: userId } } });
+        this.logger.log(`Buscando direcciones para usuario ID: ${userId}`);
+        
+        // Usar una consulta más explícita
+        const addresses = await this.addressRepo
+            .createQueryBuilder('address')
+            .leftJoinAndSelect('address.usuario', 'usuario')
+            .where('usuario.id = :userId', { userId })
+            .getMany();
+        
+        this.logger.log(`Direcciones encontradas para usuario ${userId}: ${addresses.length}`);
+        
+        return addresses;
     }
 
     async findByUsuario(usuarioId: number) {
-        return this.addressRepo.find({ where: { usuario: { id: usuarioId } } });
+        this.logger.log(`Buscando direcciones para usuario ID: ${usuarioId}`);
+        
+        // Usar una consulta más explícita
+        const addresses = await this.addressRepo
+            .createQueryBuilder('address')
+            .leftJoinAndSelect('address.usuario', 'usuario')
+            .where('usuario.id = :usuarioId', { usuarioId })
+            .getMany();
+        
+        this.logger.log(`Direcciones encontradas para usuario ${usuarioId}: ${addresses.length}`);
+        
+        return addresses;
+    }
+
+    async cleanOrphanAddresses() {
+        this.logger.log('Limpiando direcciones huérfanas...');
+        
+        // Encontrar direcciones sin usuario
+        const orphanAddresses = await this.addressRepo
+            .createQueryBuilder('address')
+            .leftJoin('address.usuario', 'usuario')
+            .where('usuario.id IS NULL')
+            .getMany();
+        
+        this.logger.log(`Direcciones huérfanas encontradas: ${orphanAddresses.length}`);
+        
+        if (orphanAddresses.length > 0) {
+            await this.addressRepo.remove(orphanAddresses);
+            this.logger.log(`Direcciones huérfanas eliminadas: ${orphanAddresses.length}`);
+        }
+        
+        return {
+            orphanAddressesFound: orphanAddresses.length,
+            orphanAddressesRemoved: orphanAddresses.length
+        };
+    }
+
+    async getDatabaseStats() {
+        const totalAddresses = await this.addressRepo.count();
+        const addressesWithUsers = await this.addressRepo
+            .createQueryBuilder('address')
+            .leftJoin('address.usuario', 'usuario')
+            .where('usuario.id IS NOT NULL')
+            .getCount();
+        
+        const addressesWithoutUsers = totalAddresses - addressesWithUsers;
+        
+        return {
+            totalAddresses,
+            addressesWithUsers,
+            addressesWithoutUsers
+        };
     }
 }
