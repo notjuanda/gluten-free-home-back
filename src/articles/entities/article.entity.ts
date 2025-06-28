@@ -29,9 +29,6 @@ export class Article {
     @Column({ unique: true })
     slug: string;
 
-    @Column('text')
-    contenidoMd: string;
-
     @Column({ type: 'text', nullable: true })
     resumen?: string;
 
@@ -56,6 +53,14 @@ export class Article {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column('json')
+    contenidoBloques: Array<{
+        id: string;
+        type: string;
+        data: any;
+        order: number;
+    }>;
 
     /* ───── Relaciones ───── */
     @ManyToMany(() => BlogCategory, (cat) => cat.articulos, { cascade: true })

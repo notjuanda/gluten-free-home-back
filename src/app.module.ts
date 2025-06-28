@@ -16,7 +16,6 @@ import { BrandsModule } from './brands/brands.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
-import { LogsModule } from './logs/logs.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
@@ -40,7 +39,6 @@ import * as path from 'path';
         RolesModule,
         PermissionsModule,
         AuthModule,
-        LogsModule,
         BrandsModule,
         ProductsModule,
         ProductImagesModule,

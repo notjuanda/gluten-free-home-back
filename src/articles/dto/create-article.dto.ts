@@ -4,8 +4,27 @@ import {
     IsString,
     IsEnum,
     IsArray,
+    ValidateNested,
+    IsNumber,
 } from 'class-validator';
 import { PublicationStatus } from '../../common/enums/publication-status.enum';
+import { Type } from 'class-transformer';
+
+export class ArticleBlockDto {
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @IsString()
+    @IsNotEmpty()
+    type: string;
+
+    @IsNotEmpty()
+    data: any;
+
+    @IsNumber()
+    order: number;
+}
 
 export class CreateArticleDto {
     @IsString()
@@ -15,10 +34,6 @@ export class CreateArticleDto {
     @IsString()
     @IsNotEmpty()
     slug: string;
-
-    @IsString()
-    @IsNotEmpty()
-    contenidoMd: string;
 
     @IsString()
     @IsOptional()
@@ -43,4 +58,10 @@ export class CreateArticleDto {
     @IsArray()
     @IsOptional()
     tagsIds?: number[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ArticleBlockDto)
+    @IsOptional()
+    contenidoBloques?: ArticleBlockDto[];
 }
