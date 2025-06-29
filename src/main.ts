@@ -4,6 +4,7 @@ import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { json } from 'express';
 import * as express from 'express';
+import * as path from 'path';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
@@ -24,6 +25,9 @@ async function bootstrap() {
     app.use('/stripe/webhook', express.raw({ type: '*/*' }));
     // Body parser normal para el resto
     app.use(json({ limit: '50mb' }));
+
+    // Servir archivos estáticos desde la carpeta uploads
+    app.use('/files', express.static(path.join(process.cwd(), 'uploads')));
 
     app.enableCors({
         origin: 'http://localhost:5173',
