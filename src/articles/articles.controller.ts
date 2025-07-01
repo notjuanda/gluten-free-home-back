@@ -8,7 +8,11 @@ import {
     Body,
     ParseIntPipe,
     UseGuards,
+    UploadedFile,
+    UseInterceptors,
+    Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -17,6 +21,7 @@ import { AssignCategoriesDto } from './dto/assign-categories.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('articles')
@@ -37,8 +42,9 @@ export class ArticlesController {
 
     @Post()
     @Permissions('articulos:crear')
-    create(@Body() dto: CreateArticleDto) {
-        return this.articlesService.create(dto);
+    create(@Body() dto: CreateArticleDto, @Req() req: Request) {
+        const userId = req.user['id'] || req.user['sub'];
+        return this.articlesService.create(dto, userId);
     }
 
     @Patch(':id')
@@ -84,5 +90,25 @@ export class ArticlesController {
     @Permissions('articulos:ver_categorias_asignadas')
     getCategories(@Param('id', ParseIntPipe) id: number) {
         return this.articlesService.getCategories(id);
+    }
+
+    @Patch(':id/portada')
+    @Permissions('articulos:editar')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadPortada(
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File,
+        @Body('textoAlt') textoAlt?: string,
+    ) {
+        return this.articlesService.uploadPortada(id, file, textoAlt);
+    }
+
+    @Post('upload-block-image')
+    @Permissions('articulos:editar')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadBlockImage(
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.articlesService.uploadBlockImage(file);
     }
 }
