@@ -16,29 +16,30 @@ import { Permissions } from '../common/decorators/permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('blog-categories')
 export class BlogCategoriesController {
     constructor(private readonly service: BlogCategoriesService) {}
 
+    // PÚBLICOS
     @Get()
-    @Permissions('blog_categorias:ver')
     findAll() {
         return this.service.findAll();
     }
 
     @Get(':id')
-    @Permissions('blog_categorias:ver')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.service.findOne(id);
     }
 
+    // PROTEGIDOS
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('blog_categorias:crear')
     create(@Body() dto: CreateBlogCategoryDto) {
         return this.service.create(dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('blog_categorias:editar')
     update(
@@ -48,6 +49,7 @@ export class BlogCategoriesController {
         return this.service.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('blog_categorias:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {

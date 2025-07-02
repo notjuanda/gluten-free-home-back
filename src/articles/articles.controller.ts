@@ -23,23 +23,23 @@ import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('articles')
 export class ArticlesController {
     constructor(private readonly articlesService: ArticlesService) {}
 
+    // PÚBLICOS
     @Get()
-    @Permissions('articulos:ver')
     findAll() {
         return this.articlesService.findAll();
     }
 
     @Get(':id')
-    @Permissions('articulos:ver')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.articlesService.findOne(id);
     }
 
+    // PROTEGIDOS
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()
     @Permissions('articulos:crear')
     create(@Body() dto: CreateArticleDto, @Req() req: Request) {
@@ -47,6 +47,7 @@ export class ArticlesController {
         return this.articlesService.create(dto, userId);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id')
     @Permissions('articulos:editar')
     update(
@@ -56,12 +57,14 @@ export class ArticlesController {
         return this.articlesService.update(id, dto);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Delete(':id')
     @Permissions('articulos:eliminar')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.articlesService.remove(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/tags')
     @Permissions('articulos:asignar_tags')
     assignTags(
@@ -71,6 +74,7 @@ export class ArticlesController {
         return this.articlesService.assignTags(id, dto.tagIds);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/categorias')
     @Permissions('articulos:asignar_categorias')
     assignCategories(
@@ -81,17 +85,16 @@ export class ArticlesController {
     }
 
     @Get(':id/tags')
-    @Permissions('articulos:ver_tags_asignados')
     getTags(@Param('id', ParseIntPipe) id: number) {
         return this.articlesService.getTags(id);
     }
 
     @Get(':id/categorias')
-    @Permissions('articulos:ver_categorias_asignadas')
     getCategories(@Param('id', ParseIntPipe) id: number) {
         return this.articlesService.getCategories(id);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Patch(':id/portada')
     @Permissions('articulos:editar')
     @UseInterceptors(FileInterceptor('file'))
@@ -103,6 +106,7 @@ export class ArticlesController {
         return this.articlesService.uploadPortada(id, file, textoAlt);
     }
 
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post('upload-block-image')
     @Permissions('articulos:editar')
     @UseInterceptors(FileInterceptor('file'))

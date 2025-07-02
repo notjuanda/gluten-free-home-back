@@ -35,7 +35,7 @@ export class CommentsService {
         });
     }
 
-    async create(dto: CreateCommentDto) {
+    async create(dto: CreateCommentDto, userId?: number) {
         const articulo = await this.articleRepo.findOneBy({
             id: dto.articuloId,
         });
@@ -46,9 +46,9 @@ export class CommentsService {
             articulo,
         });
 
-        if (dto.usuarioId) {
+        if (userId) {
             const usuario = await this.userRepo.findOneBy({
-                id: dto.usuarioId,
+                id: userId,
             });
             if (usuario) {
                 comment.usuario = usuario;
