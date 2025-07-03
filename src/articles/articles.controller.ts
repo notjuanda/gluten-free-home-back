@@ -38,6 +38,11 @@ export class ArticlesController {
         return this.articlesService.findOne(id);
     }
 
+    @Get('slug/:slug')
+    findBySlug(@Param('slug') slug: string) {
+        return this.articlesService.findBySlug(slug);
+    }
+
     // PROTEGIDOS
     @UseGuards(JwtAuthGuard, PermissionsGuard)
     @Post()

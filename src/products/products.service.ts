@@ -185,4 +185,13 @@ export class ProductsService {
             ventas: Number(raw[idx].ventas),
         }));
     }
+
+    async findBySlug(slug: string) {
+        const prod = await this.repo.findOne({
+            where: { slug },
+            relations: ['categoria', 'marca', 'imagenes', 'ingredientes'],
+        });
+        if (!prod) throw new NotFoundException('Producto no encontrado');
+        return prod;
+    }
 }

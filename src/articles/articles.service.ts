@@ -368,4 +368,13 @@ export class ArticlesService {
         const filename = await this.uploadService.saveFile(file);
         return { url: `/files/${filename}` };
     }
+
+    async findBySlug(slug: string) {
+        const art = await this.articleRepo.findOne({
+            where: { slug },
+            relations: ['autor', 'tags', 'categorias', 'comentarios'],
+        });
+        if (!art) throw new NotFoundException('Artículo no encontrado');
+        return art;
+    }
 }

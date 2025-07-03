@@ -131,4 +131,9 @@ export class ProductsController {
     getImagenes(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.getImagenes(id);
     }
+
+    @Get('slug/:slug')
+    findBySlug(@Param('slug') slug: string) {
+        return this.productsService.findBySlug(slug);
+    }
 }

@@ -26,7 +26,7 @@ export class OrdersController {
     @UseGuards(JwtAuthGuard)
     @Get('me/orders')
     async findMyOrders(@Req() req) {
-        const userId = req.user.sub;
+        const userId = req.user.id;
         return this.ordersService.findByUserId(userId);
     }
 

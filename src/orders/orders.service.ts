@@ -303,10 +303,12 @@ export class OrdersService {
     }
 
     async findByUserId(userId: number) {
-        return this.repo.find({
+        console.log('findByUserId - userId:', userId);
+        const result = await this.repo.find({
             where: { usuario: { id: userId } },
-            relations: ['items', 'items.producto', 'direccionEnvio', 'pagos'],
+            relations: ['usuario', 'items', 'items.producto', 'direccionEnvio', 'pagos'],
             order: { createdAt: 'DESC' },
         });
+        return result;
     }
 }
