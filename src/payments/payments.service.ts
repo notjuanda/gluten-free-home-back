@@ -8,6 +8,7 @@ import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { Order } from '../orders/entities/order.entity';
 import { PaymentStatus } from '../common/enums/payment-status.enum';
 import { StripeService } from '../stripe/stripe.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentsService {
@@ -16,6 +17,7 @@ export class PaymentsService {
         private readonly paymentRepo: Repository<Payment>,
         @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
         private readonly stripeService: StripeService,
+        private readonly configService: ConfigService,
     ) {}
 
     findAll() {
@@ -108,8 +110,9 @@ export class PaymentsService {
             });
         }
 
-        const successUrl = `http://localhost:5173/payment/success?session_id={CHECKOUT_SESSION_ID}`;
-        const cancelUrl = `http://localhost:5173/payment/cancel`;
+        const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+        const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
+        const cancelUrl = `${frontendUrl}/payment/cancel`;
 
         const metadata = {
             orderId: pedido.id.toString(),
